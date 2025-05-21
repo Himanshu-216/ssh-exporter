@@ -1,0 +1,52 @@
+version: 2
+
+before:
+  hooks:
+    - go mod tidy
+    - go generate ./...
+
+builds:
+  - id: ssh-exporter
+    main: main.go
+    binary: ssh-exporter
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+      - -X github.com/prometheus/common/version.Branch={{ .Branch }}
+      - -X github.com/prometheus/common/version.BuildDate={{ .Date }}
+      # - -X github.com/prometheus/common/version.BuildUser={{ .Env.USER }}@{{ .Env.HOSTNAME }}
+      - -X github.com/prometheus/common/version.Revision={{ .FullCommit }}
+      - -X main.version={{ .Version }}
+
+archives:
+  - formats: ['tar.gz', 'zip']
+    name_template: >-
+      {{ .ProjectName }}_{{ .Os }}_{{- if eq .Arch "amd64" }}x86_64{{- else if eq .Arch "386" }}i386{{ else }}{{ .Arch }}{{ end }}{{- if .Arm }}v{{ .Arm }}{{ end }}
+    format_overrides:
+    - goos: windows
+      formats: ["zip"]
+    - goos: linux
+      formats: ["tar.gz", "zip"]
+
+checksum:
+  name_template: checksums.txt
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+
+release:
+  footer: |
+
+    ---
+
+    Released by [GoReleaser](https://github.com/goreleaser/goreleaser).
