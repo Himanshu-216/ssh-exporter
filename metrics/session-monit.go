@@ -16,10 +16,10 @@ type Session struct {
 }
 
 var (
-	sessions     = make(map[string]*Session) // key: systemd session ID
-	tempSessions = make(map[string]*Session) // key: username before session ID is known
-
-	loginRegex        = regexp.MustCompile(`sshd\[\d+\]: Accepted publickey for (\w+) from .* ssh2: RSA (\S+)`)
+	// Existing metrics
+	sessions        = make(map[string]*Session) // key: systemd session ID
+	tempSessions    = make(map[string]*Session) // key: username before session ID is known
+	loginRegex      = regexp.MustCompile(`sshd\[\d+\]: Accepted publickey for (\w+) from .* ssh2: RSA (\S+)`)
 	sessionStartRegex = regexp.MustCompile(`systemd-logind\[\d+\]: New session (\d+) of user (\w+)`)
 	sessionEndRegex   = regexp.MustCompile(`systemd-logind\[\d+\]: Removed session (\d+)`)
 	timeRegex         = regexp.MustCompile(`^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2})`)
@@ -55,6 +55,9 @@ func MonitorAuthLog(logFilePath string) error {
 				User:        user,
 				Fingerprint: fingerprint,
 			}
+			
+			// Increment active SSH session count
+			ActiveSSHCount.Inc()
 			continue
 		}
 
@@ -86,6 +89,9 @@ func MonitorAuthLog(logFilePath string) error {
 
 				// Only delete active metric
 				SSHSessionActive.DeleteLabelValues(sessionID, s.User, s.Fingerprint)
+
+				// Decrement active SSH session count
+				ActiveSSHCount.Dec()
 
 				delete(sessions, sessionID)
 			} else {

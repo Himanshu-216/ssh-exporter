@@ -54,11 +54,15 @@ var (
 		[]string{"session_id", "user", "fingerprint", "login_time"},
 	)
 	
-
+	ActiveSSHCount = prometheus.NewGauge(prometheus.GaugeOpts{
+		Name: "ssh_sessions_active_count",
+		Help: "The number of active SSH sessions",
+	})
 )
 
 // Register all metrics with Prometheus
 func RegisterMetrics() {
+	prometheus.MustRegister(ActiveSSHCount)
 	prometheus.MustRegister(SSHLoginsToday)
 	prometheus.MustRegister(LastLoginTime)
 	prometheus.MustRegister(SSHFailedLoginsByIP)
