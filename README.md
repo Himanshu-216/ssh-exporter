@@ -24,30 +24,32 @@ docker run --privileged --rm \
   -v /var/log/btmp:/var/log/btmp:ro \
   -v /var/run/utmp:/var/run/utmp:ro \
   -v /var/log/lastlog:/var/log/lastlog:ro \
+  -v /var/log/auth.log:/var/log/auth.log:ro \
   -v /etc/passwd:/etc/passwd:ro \
   himanshu162pnt723/ssh-exporter
 ```
 ## Features
 
 - **Active SSH Sessions**: Tracks the number of active SSH sessions on the server.
-- **Sessions by User**: Tracks the number of active SSH sessions per user.
+- **Sessions by User**: ssh_active_sessions (with labels user and session_id).
 - **SSH Logins Today**: Tracks the number of SSH logins that have occurred today.
 - **Last Login Time**: Provides the last login time for each user (in Unix timestamp).
 - **Failed Logins by IP**: Tracks failed SSH login attempts by source IP address.
 - **Successful Logins by IP**: Tracks successful SSH login attempts by source IP address.
+- **SSH Session Duration**: Tracks the duration of SSH sessions in seconds..
 
 You can use these Prometheus queries to visualize and alert on SSH activity.
 
-- **Total active SSH sessions**:
+- **Total active SSH sessions by fingerprint labels**:
 
     ```promQL
     ssh_active_sessions
     ```
 
-- **Active sessions by user**:
+- **SSH connection duration**:
 
     ```promQL
-    ssh_active_sessions_by_user
+    ssh_session_duration_seconds
     ```
 
 - **Logins today**:
@@ -72,6 +74,12 @@ You can use these Prometheus queries to visualize and alert on SSH activity.
 
     ```promQL
     SSHSuccessfulLoginsByIP
+    ```
+
+- **Active sessions count**:
+
+    ```promQL
+    ssh_sessions_active_count
     ```
 
 ## Contributing
